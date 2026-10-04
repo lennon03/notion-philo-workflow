@@ -1,5 +1,6 @@
 import { getRequestToken, isAuthorized, unauthorizedResponse } from "../../../lib/auth";
-import { CACHE_MARKER_PREFIX, allRows, cloneChildren, findOrCreateCache, getNotion, replaceBlocks, titleOf, writableRichText } from "../../../lib/notion";
+import { getNotion } from "../../../lib/notion";
+import { syncLesson } from "../../../lib/sync";
 
 export const runtime = "nodejs";
 
@@ -11,16 +12,7 @@ export async function POST(request) {
     const notion = getNotion();
     const results = [];
     for (const lesson of lessons) {
-      const cards = await allRows(notion, lesson.id);
-      const blocks = [{ object: "block", type: "code", code: { language: "plain text", rich_text: [{ type: "text", text: { content: `${CACHE_MARKER_PREFIX}${lesson.id}` } }] } }];
-      for (const card of cards) {
-        const property = Object.values(card.properties ?? {}).find((value) => value?.type === "title");
-        const title = property ? writableRichText(property.title) : [{ type: "text", text: { content: titleOf(card).slice(0, 2000) } }];
-        blocks.push({ object: "block", type: "toggle", toggle: { rich_text: title, children: await cloneChildren(notion, card.id) } });
-      }
-      const cache = await findOrCreateCache(notion, lesson.id);
-      await replaceBlocks(notion, cache.id, blocks);
-      results.push({ lesson: lesson.name, cards: cards.length, cacheUrl: cache.url });
+      results.push(await syncLesson(notion, lesson));
     }
     return Response.json({ results });
   } catch (error) {
