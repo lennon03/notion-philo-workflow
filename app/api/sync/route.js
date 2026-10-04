@@ -1,8 +1,10 @@
+import { getRequestToken, isAuthorized, unauthorizedResponse } from "../../../lib/auth";
 import { CACHE_MARKER_PREFIX, allRows, cloneChildren, findOrCreateCache, getNotion, replaceBlocks, titleOf, writableRichText } from "../../../lib/notion";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
+  if (!isAuthorized(getRequestToken(request))) return unauthorizedResponse();
   try {
     const { lessons } = await request.json();
     if (!Array.isArray(lessons) || lessons.length === 0) return Response.json({ error: "Sélectionnez au moins une leçon." }, { status: 400 });

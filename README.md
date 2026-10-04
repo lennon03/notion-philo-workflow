@@ -16,7 +16,7 @@ La page cache est nommée exactement `- cache -`. Elle est retrouvée grâce à 
 
 ## Déploiement Vercel
 
-Importez ce dossier dans un projet Vercel. Ajoutez `NOTION_TOKEN`, `NOTION_PARENT_PAGE_ID` et, si besoin, `NOTION_LESSONS_JSON` dans les variables d’environnement de production. Puis embarquez l’URL de production avec `/embed` dans Notion.
+Importez ce dossier dans un projet Vercel. Ajoutez `NOTION_TOKEN`, `NOTION_PARENT_PAGE_ID`, `TOKEN_PWD` et, si besoin, `NOTION_LESSONS_JSON` dans les variables d’environnement de production. Puis embarquez l’URL de production avec `/embed?token=VOTRE_TOKEN_PWD` dans Notion.
 
 ## Plugin
 
