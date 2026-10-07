@@ -12,7 +12,9 @@ Par défaut, l’application découvre les bases inline présentes dans la page 
 
 ## Cache
 
-La page cache est nommée exactement `- cache -`. Elle est retrouvée grâce à un marqueur technique interne et entièrement régénérée à chaque synchronisation : aucun doublon n’est créé. Une modification manuelle du cache est écrasée à la prochaine synchronisation ; la table source demeure l’autorité.
+Chaque table de leçon a son propre cache, et tous les caches sont regroupés sous une page `Card`, elle-même enfant de la page parente. Le cache d'une leçon « Le bonheur » est donc la page « Le bonheur Cards » dans `Card`. La page `Card` est créée à la première synchronisation.
+
+Chaque cache est retrouvé grâce à un marqueur technique interne et non via son titre : le renommer dans Notion n'en provoque pas de duplication. Son contenu est entièrement régénéré à chaque synchronisation. Une modification manuelle du cache est écrasée à la prochaine synchronisation ; la table source demeure l'autorité.
 
 ## Déploiement Vercel
 
@@ -20,7 +22,11 @@ Importez ce dossier dans un projet Vercel. Ajoutez `NOTION_TOKEN`, `NOTION_PAREN
 
 ## MCP public (sans auth)
 
-`POST /api/mcp` parle MCP Streamable HTTP (JSON-RPC) sans `TOKEN_PWD` : le secret Notion reste côté serveur. Outils : `list_lessons`, `preview_lesson({lesson_id})`, `sync_lesson({lesson_id})`, où `lesson_id` est l’id de la table (data-source id). `sync_lesson` n’est à appeler qu’après relecture et sur ordre de l’utilisateur.
+`POST /api/mcp` parle MCP Streamable HTTP (JSON-RPC) sans `TOKEN_PWD` : le secret Notion reste côté serveur. Outils : `list_lessons`, `create_lesson({name})`, `preview_lesson({lesson_id})`, `sync_lesson({lesson_id})`, où `lesson_id` est l’id de la table (data-source id). `sync_lesson` n’est à appeler qu’après relecture et sur ordre de l’utilisateur.
+
+## Tables de leçon
+
+`create_lesson` crée une base de données enfant de la page parente dont la seule propriété est un champ titre nommé exactement `Front`. Il refuse de créer une table si une leçon porte déjà ce nom. Une fois la table créée, elle doit être partagée avec l’intégration correspondant à `NOTION_TOKEN`, sinon `list_lessons` ne la verra pas.
 
 ## Embed par table
 
@@ -28,4 +34,4 @@ Importez ce dossier dans un projet Vercel. Ajoutez `NOTION_TOKEN`, `NOTION_PAREN
 
 ## Plugin
 
-`plugin/philo-flashcards` est un plugin d’instructions autonome. Le ZIP à installer est créé à la racine du projet sous le nom `philo-flashcards-plugin.zip`.
+Le plugin n’est pas dans ce dépôt : il vit dans un dépôt séparé, `philo-flashcards-plugin`, qui ne contient que `plugin.json`, `mcp.json` et `skills/`. Son `mcp.json` pointe vers le `POST /api/mcp` de ce projet. Toute modification du contrat d'outils doit être répercutée dans la skill du plugin.
