@@ -12,8 +12,32 @@ import { syncLesson } from "../../../lib/sync";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SERVER_INFO = { name: "philo-workflow", version: "0.2.0" };
+const SERVER_INFO = { name: "philo-workflow", version: "0.3.0" };
 const SUPPORTED_PROTOCOLS = ["2025-06-18", "2025-11-25"];
+
+// Guidance serveur renvoyée dans initialize.instructions. Elle porte le long
+// formatage (consigne de production, aperçu HTML, layout des caches) ; les
+// outils restent autonomes grâce à leurs descriptions, donc rien d'indispensable
+// ne dépend de ce bloc.
+const SERVER_INSTRUCTIONS = `Workflow de flashcards de philosophie (Notion).
+
+PRÉREQUIS EXTERNE. Ce serveur ne donne pas accès à Notion : la lecture et l'écriture dans Notion passent par un skill Notion externe que l'agent doit avoir importé. Sans lui, seul le travail sur les caches reste possible (list_lessons, preview_lesson, sync_lesson). Ne simule jamais l'accès à Notion et n'invente ni page, ni table, ni identifiant. Si le skill Notion est absent, dis-le clairement et arrête-toi.
+
+RÉFLEXE DE DÉMARRAGE. Quand l'utilisateur parle d'une leçon sans identifiant, appelle list_lessons pour traduire son nom en lesson_id. Avant toute écriture, lis la structure de la table et vérifie que le champ Front est disponible.
+
+CRÉER LES FICHES. Crée les entrées directement dans la bonne table, via le skill Notion : Front contient la question ou l'intitulé reformulé, et la réponse complète va dans le contenu de la page associée à l'entrée. N'écris jamais dans une page cache. Avant une création importante, indique brièvement la table visée et le nombre de cartes prévues, et affiche les cartes dans un tableau. Après l'écriture, précise la table modifiée, le nombre de cartes créées, et les limites ou ambiguïtés rencontrées.
+
+CONSIGNE DE PRODUCTION (philosophe). Si la demande ne comporte pas le mot OCR, applique ceci : à partir des documents de cours joints, crée des flashcards. Organise les cartes par grands axes de cours et par auteurs, et non par notions élémentaires isolées ; chaque carte porte sur une thèse ou un raisonnement complet. Dans chaque réponse, regroupe les notions nécessaires au même axe : définitions utiles, distinctions, argumentation, conséquences pour la conception du bonheur ou du désir. Fais des cartes suffisamment denses pour préparer une évaluation, mais claires et mémorisables. Reste fidèle au cours ; évite le contexte historique, les exemples de la vie réelle et les cartes de définition isolée. Les intitulés restent fidèles aux axes du cours tout en comportant l'indice du contenu.
+
+Si la demande comporte le mot OCR, ne change strictement rien à ce qui apparaît dans la photo que l'utilisateur envoie.
+
+OÙ VIVENT LES CACHES. Chaque table a son propre cache, tous regroupés sous une page unique nommée Card, elle-même enfant de la page parente. Le cache de la leçon « Le bonheur » est la page « Le bonheur Cards » à l'intérieur de « Card ». La page Card et ses pages filles sont générées par ce serveur : ne les crée pas et ne les modifie pas à la main. sync_lesson crée la page manquante si besoin et l'écrase intégralement à chaque appel. Une modification manuelle du cache est donc perdue à la synchronisation suivante ; la table source demeure l'autorité.
+
+APERÇU HTML (si l'utilisateur demande un aperçu). Appelle preview_lesson, puis produis UNE page HTML autonome en artefact de chat, pas une page hébergée. Style spec, pas landing page : dense, lisible rapidement, sans hero, sans chrome décoratif, sans ton marketing, sans tirets cadratins. Fond noir pur (#000), texte blanc, gris sombre uniquement pour surfaces secondaires ou accents. Lisible sur mobile : viewport responsive, aucune mise en page à largeur fixe. HTML sémantique, CSS inline, SVG inline, images HTTPS ou data-URL uniquement. Script classique inline uniquement si l'interactivité aide vraiment ; la page doit rester utile sans JavaScript (le bac à sable bloque stockage, fetch, workers, frames, formulaires, popups). Sans script : liens externes en target="_blank" + rel="noopener noreferrer" ; avec script : pas de target="_blank". Jamais : scripts externes ou modules, gestionnaires d'événements inline, URLs javascript:, formulaires, frames, embeds, objets, applets, meta refresh, feuilles de style liées, secrets, URLs privées, chemins locaux. La page commence par un tableau question | réponse | changements. Les cartes sont en markdown Notion limité à : puces, flèches -> ou =>, italique, séparateurs. Aucune autre mise en forme.
+
+CRÉER UNE NOUVELLE LECON. Après confirmation de l'utilisateur, et seulement si list_lessons ne renvoie rien de similaire : 1) appelle create_lesson({name}), qui crée la table et renvoie lesson_id ; s'il signale qu'une leçon de ce nom existe, reprends le lesson_id de list_lessons sans en créer une seconde. 2) Demande à l'utilisateur de partager la nouvelle base avec l'intégration du workflow (celle de NOTION_TOKEN), sinon ce serveur ne la verra pas ; cette étape ne peut pas être automatisée, et une table absente de list_lessons en est le symptôme. 3) Ajoute les fiches avec le skill Notion. 4) Dans la page parente, ajoute un bloc Embed pointant sur l'URL de vue mono-leçon ci-dessous, en demandant le TOKEN_PWD à l'utilisateur et sans jamais inventer sa valeur. 5) Vérifie en ouvrant le lien : la vue mono-leçon (titre et statut au-dessus des deux boutons Sync / Export) doit s'afficher.
+
+INSTANCE. Workflow hébergé : https://notion-philo-workflow.vercel.app/api/mcp. Application web : https://notion-philo-workflow.vercel.app. Vue mono-leçon : https://notion-philo-workflow.vercel.app/embed/<lesson_id>?token=<TOKEN_PWD>. Ces URL sont celles de cette instance : utilise-les telles quelles, n'invente pas d'autre domaine et ne demande pas à l'utilisateur d'URL de déploiement.`;
 
 const lessonIdSchema = z.object({ lesson_id: z.string().min(1) });
 const createLessonSchema = z.object({ name: z.string().min(1).max(200) });
@@ -22,7 +46,7 @@ const TOOLS = [
   {
     name: "list_lessons",
     title: "Lister les leçons",
-    description: "Liste les tables de leçons de philosophie (id de table + nom). Appelle-la pour résoudre un nom de leçon en lesson_id avant preview_lesson ou sync_lesson.",
+    description: "Liste les leçons : pour chacune, son lesson_id et son nom. Appelle cet outil en premier dès que l'utilisateur parle d' flashcards de philosophie, d'une leçon, d'un chapitre ou d'un cours à relire, et systématiquement avant d'en créer une nouvelle. Lecture seule, ne modifie rien.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
     outputSchema: {
       type: "object",
@@ -53,7 +77,7 @@ const TOOLS = [
   {
     name: "preview_lesson",
     title: "Aperçu des cartes d'une leçon",
-    description: "Lit les cartes Anki (question + réponse) d'une table de leçon sans rien modifier. Sert à relire et à construire l'aperçu HTML avant toute synchronisation.",
+    description: "Relit toutes les cartes d'une leçon (question + réponse) sans rien modifier. C'est l'outil de relecture : utilise-le quand l'utilisateur veut vérifier, relire ou voir ce qu'il faudrait corriger avant de synchroniser. Sa sortie sert aussi à construire l'aperçu HTML. Lecture seule.",
     inputSchema: { type: "object", properties: { lesson_id: { type: "string", description: "Id de la table (data-source id) de la leçon." } }, required: ["lesson_id"], additionalProperties: false },
     outputSchema: {
       type: "object",
@@ -71,7 +95,7 @@ const TOOLS = [
   {
     name: "sync_lesson",
     title: "Synchroniser le cache d'une leçon",
-    description: "Régénère le cache d'une leçon, c'est-à-dire sa page « <nom de la leçon> Cards » sous la page « Card ». Ecrase le cache existant. A n'appeler qu'après relecture par l'utilisateur et sur son ordre explicite.",
+    description: "Régénère le cache d'UNE leçon : sa page « <nom de la leçon> Cards », située sous la page conteneur « Card ». ECRASE intégralement le contenu précédent ; un seul appel par table. N'appelle cet outil qu'après une relecture par l'utilisateur (preview_lesson) et sur son ordre explicite (« synchronise », « mets à jour le cache »). N'écris jamais dans une page cache autrement, ni à la main ni via un outil Notion. Toutes les pages de cache sont générées par ce serveur : ne les crée pas et ne les modifie pas toi-même.",
     inputSchema: { type: "object", properties: { lesson_id: { type: "string", description: "Id de la table (data-source id) de la leçon." } }, required: ["lesson_id"], additionalProperties: false },
     outputSchema: {
       type: "object",
@@ -153,7 +177,7 @@ async function handleRpc(body) {
     if (method === "initialize") {
       const requested = params?.protocolVersion;
       const protocolVersion = SUPPORTED_PROTOCOLS.includes(requested) ? requested : SUPPORTED_PROTOCOLS[0];
-      return ok(id, { protocolVersion, capabilities: { tools: {} }, serverInfo: SERVER_INFO });
+      return ok(id, { protocolVersion, capabilities: { tools: {} }, serverInfo: SERVER_INFO, instructions: SERVER_INSTRUCTIONS });
     }
     if (method === "ping") return ok(id, {});
     if (method === "tools/list") return ok(id, { tools: TOOLS });
