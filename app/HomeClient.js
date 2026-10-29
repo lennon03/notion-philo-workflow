@@ -191,17 +191,14 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
         <div className="database">
           <div className="database-head">
             <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
-            <span className="table-icon">▦</span>
             <span>Tables à exporter</span>
             <span className="count">{lessons.length}</span>
           </div>
           {loading && <div className="empty">Chargement des leçons…</div>}
           {!loading &&
             lessons.map((lesson) => (
-              <label className="row" key={lesson.id}>
+              <label className={`row ${selected.includes(lesson.id) ? "selected" : ""}`} key={lesson.id}>
                 <input type="checkbox" checked={selected.includes(lesson.id)} onChange={() => toggle(lesson.id)} />
-                <span className="checkbox" aria-hidden="true">{selected.includes(lesson.id) && "✓"}</span>
-                <span className="page-icon">◻</span>
                 <span>{lesson.name}</span>
               </label>
             ))}
