@@ -52,7 +52,7 @@ export default function HomeClient({ token, initialLessonId }) {
       const r = await fetch(`/api/export${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lesson: chosen[0] }),
+        body: JSON.stringify({ lesson: chosen[0], format: "docx" }),
       });
       if (!r.ok) throw new Error((await r.json()).error);
       const url = URL.createObjectURL(await r.blob());
@@ -60,6 +60,26 @@ export default function HomeClient({ token, initialLessonId }) {
       a.click();
       URL.revokeObjectURL(url);
       setStatus({ kind: "success", text: "Le document Word est prêt." });
+    } catch (e) {
+      setStatus({ kind: "error", text: e.message });
+    }
+  }
+
+  async function exportPdf() {
+    if (chosen.length !== 1) return setStatus({ kind: "error", text: "Choisissez exactement une leçon pour l’export PDF." });
+    setStatus({ kind: "working", text: "Préparation du document PDF…" });
+    try {
+      const r = await fetch(`/api/export${query}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lesson: chosen[0], format: "pdf" }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error);
+      const url = URL.createObjectURL(await r.blob());
+      const a = Object.assign(document.createElement("a"), { href: url, download: `${chosen[0].name}.pdf` });
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus({ kind: "success", text: "Le document PDF est prêt." });
     } catch (e) {
       setStatus({ kind: "error", text: e.message });
     }
@@ -85,7 +105,10 @@ export default function HomeClient({ token, initialLessonId }) {
               ↻ Sync
             </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportWord}>
-              ↓ Export
+              ↓ Export Word
+            </button>
+            <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportPdf}>
+              ↓ Export PDF
             </button>
           </div>
           {!loading && !current && (
@@ -138,6 +161,9 @@ export default function HomeClient({ token, initialLessonId }) {
           </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportWord}>
             ↓ Exporter en Word
+          </button>
+          <button disabled={!chosen.length || status?.kind === "working"} onClick={exportPdf}>
+            ↓ Exporter en PDF
           </button>
         </div>
         {notice}
