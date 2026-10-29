@@ -159,13 +159,13 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           {notice}
           <div className="actions">
             <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
-              ↓ HTML à imprimer en PDF
+              HTML à imprimer en PDF
             </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportWord}>
-              ↓ Export Word
+              Export Word
             </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportPdf}>
-              ↓ Export PDF (expérimental)
+              Export PDF (expérimental)
             </button>
             <div className="size-control single">
               <label htmlFor="pdf-size-single">Taille</label>
@@ -206,13 +206,13 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
         </div>
         <div className="actions">
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
-            ↓ HTML à imprimer en PDF
+            HTML à imprimer en PDF
           </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportWord}>
-            ↓ Exporter en Word
+            Exporter en Word
           </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportPdf}>
-            ↓ Exporter en PDF (expérimental)
+            Exporter en PDF (expérimental)
           </button>
           <div className="size-control">
             <label htmlFor="pdf-size">Taille du texte</label>
