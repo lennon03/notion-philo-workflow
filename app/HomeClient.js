@@ -5,6 +5,7 @@ export default function HomeClient({ token, initialLessonId }) {
   const single = Boolean(initialLessonId);
   const [lessons, setLessons] = useState([]);
   const [selected, setSelected] = useState(initialLessonId ? [initialLessonId] : []);
+  const [size, setSize] = useState(3);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const query = `?token=${encodeURIComponent(token)}`;
@@ -69,29 +70,37 @@ export default function HomeClient({ token, initialLessonId }) {
 
   async function exportPdf() {
     if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export PDF." });
-    setStatus({ kind: "working", text: "Ouverture de l’aperçu à imprimer…" });
+    setStatus({ kind: "working", text: "Préparation du document PDF…" });
     try {
-      // On récupère la page HTML stylée, puis on l'ouvre dans un nouvel onglet
-      // et on lance l'impression : « Enregistrer au format PDF » donne un
-      // document net (polices et styles du navigateur, accents et emoji inclus).
       const r = await fetch(`/api/export${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessons: chosen, format: "html" }),
+        body: JSON.stringify({ lessons: chosen, format: "pdf", size }),
       });
-      if (!r.ok) throw new Error((await r.json()).error);
-      const html = await r.text();
+      const type = r.headers.get("content-type") || "";
+      if (r.ok && type.includes("application/pdf")) {
+        const url = URL.createObjectURL(await r.blob());
+        const a = Object.assign(document.createElement("a"), { href: url, download: `${chosen[0].name}.pdf` });
+        a.click();
+        URL.revokeObjectURL(url);
+        setStatus({ kind: "success", text: "Le document PDF est prêt." });
+        return;
+      }
+      // Serveur indisponible : on bascule sur l'aperçu à imprimer.
+      let message = "La génération PDF a échoué, ouverture de l'aperçu à imprimer.";
+      try { message = (await r.json()).error || message; } catch {}
+      setStatus({ kind: "working", text: message });
+      const r2 = await fetch(`/api/export${query}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessons: chosen, format: "html", size }),
+      });
+      if (!r2.ok) throw new Error((await r2.json()).error);
+      const html = await r2.text();
       const printWindow = window.open("", "_blank");
-      if (!printWindow) throw new Error("Le navigateur a bloqué la fenêtre d’impression. Autorisez les pop-ups puis réessayez.");
-      // Le handler est posé AVANT l'écriture : load peut sinon se déclencher
-      // entre close() et l'affectation. Un filet de sécurité relance aussi
-      // l'impression si load ne se déclenche pas (fenêtre déjà prête).
+      if (!printWindow) throw new Error("Le navigateur a bloqué la fenêtre. Autorisez les pop-ups puis réessayez.");
       let printed = false;
-      const launchPrint = () => {
-        if (printed) return;
-        printed = true;
-        setTimeout(() => printWindow.print(), 250);
-      };
+      const launchPrint = () => { if (printed) return; printed = true; setTimeout(() => printWindow.print(), 250); };
       printWindow.onload = launchPrint;
       printWindow.document.open();
       printWindow.document.write(html);
@@ -129,6 +138,11 @@ export default function HomeClient({ token, initialLessonId }) {
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportPdf}>
               ↓ Export PDF
             </button>
+            <div className="size-control single">
+              <label htmlFor="pdf-size-single">Taille</label>
+              <input id="pdf-size-single" type="range" min="1" max="5" step="1" value={size} onChange={(e) => setSize(Number(e.target.value))} disabled={status?.kind === "working"} />
+              <span className="size-value">{size}</span>
+            </div>
           </div>
           {!loading && !current && (
             <div className="notice error">! <span>Aucune table ne correspond à cet identifiant. Vérifiez le lien d’intégration.</span></div>
@@ -173,6 +187,11 @@ export default function HomeClient({ token, initialLessonId }) {
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportPdf}>
             ↓ Exporter en PDF
           </button>
+          <div className="size-control">
+            <label htmlFor="pdf-size">Taille du texte</label>
+            <input id="pdf-size" type="range" min="1" max="5" step="1" value={size} onChange={(e) => setSize(Number(e.target.value))} disabled={status?.kind === "working"} />
+            <span className="size-value">{size}</span>
+          </div>
         </div>
         {notice}
         <p className="note">Le secret Notion reste uniquement sur le serveur Vercel. Un cache est entièrement remplacé à chaque synchronisation.</p>
