@@ -70,33 +70,15 @@ export default function HomeClient({ token, initialLessonId }) {
 
   async function exportPdf() {
     if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export PDF." });
-    setStatus({ kind: "working", text: "Préparation du document PDF…" });
+    setStatus({ kind: "working", text: "Ouverture de l’export HTML à imprimer…" });
     try {
       const r = await fetch(`/api/export${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessons: chosen, format: "pdf", size }),
-      });
-      const type = r.headers.get("content-type") || "";
-      if (r.ok && type.includes("application/pdf")) {
-        const url = URL.createObjectURL(await r.blob());
-        const a = Object.assign(document.createElement("a"), { href: url, download: `${chosen[0].name}.pdf` });
-        a.click();
-        URL.revokeObjectURL(url);
-        setStatus({ kind: "success", text: "Le document PDF est prêt." });
-        return;
-      }
-      // Serveur indisponible : on bascule sur l'aperçu à imprimer.
-      let message = "La génération PDF a échoué, ouverture de l'aperçu à imprimer.";
-      try { message = (await r.json()).error || message; } catch {}
-      setStatus({ kind: "working", text: message });
-      const r2 = await fetch(`/api/export${query}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lessons: chosen, format: "html", size }),
       });
-      if (!r2.ok) throw new Error((await r2.json()).error);
-      const html = await r2.text();
+      if (!r.ok) throw new Error((await r.json()).error);
+      const html = await r.text();
       const printWindow = window.open("", "_blank");
       if (!printWindow) throw new Error("Le navigateur a bloqué la fenêtre. Autorisez les pop-ups puis réessayez.");
       let printed = false;
@@ -136,7 +118,7 @@ export default function HomeClient({ token, initialLessonId }) {
               ↓ Export Word
             </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportPdf}>
-              ↓ Export PDF
+              ↓ Export PDF (expérimental)
             </button>
             <div className="size-control single">
               <label htmlFor="pdf-size-single">Taille</label>
@@ -188,7 +170,7 @@ export default function HomeClient({ token, initialLessonId }) {
             ↓ Exporter en Word
           </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportPdf}>
-            ↓ Exporter en PDF
+            ↓ Exporter en PDF (expérimental)
           </button>
           <div className="size-control">
             <label htmlFor="pdf-size">Taille du texte</label>
