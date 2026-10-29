@@ -6,13 +6,13 @@ Exportez le contenu de vos pages Notion en PDF, Word ou HTML.
 
 La page Notion doit contenir une base de données intégrée, avec une ligne par page à exporter.
 
-![Exemple de structure Notion](docs/notion-example.png)
+![Structure Notion et aperçu du document exporté](docs/notion-export-overview.png)
 
 ## 2. Document exporté
 
-Le contenu des pages est transformé en document propre et lisible.
+Le contenu des pages est transformé en document propre et lisible. Sélectionnez les pages à exporter, puis choisissez le format souhaité.
 
-![Exemple de document exporté](docs/example-export.png)
+![Utilisation de l’exporteur](docs/export-workflow.png)
 
 Les éléments Notion suivants sont pris en charge :
 
