@@ -8,6 +8,7 @@ const nextConfig = {
     "/api/export": [
       "./node_modules/@sparticuz/chromium/bin/**",
       "./node_modules/katex/dist/fonts/**",
+      "./node_modules/@fontsource/fira-code/files/fira-code-latin-400-normal.woff2",
       "./lib/katex-inline.txt",
     ],
   },
