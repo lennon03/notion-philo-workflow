@@ -11,7 +11,7 @@ export async function GET(request) {
     const notion = getNotion(token);
     try {
       const page = await pageInfo(notion, pageId);
-      return Response.json({ lessons: [{ id: page.id, name: page.name, type: page.type }, ...page.sources] });
+      return Response.json({ lessons: page.sources });
     } catch (pageError) {
       try {
         const database = await notion.databases.retrieve({ database_id: pageId });

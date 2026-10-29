@@ -61,8 +61,8 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
       <main>
         <section className="surface landing">
           <div className="eyebrow">Notion Export</div>
-          <h1>Exporter une page Notion</h1>
-          <p className="intro">Collez l’URL de la page à exporter. Ajoutez son token d’intégration uniquement si la page est privée.</p>
+          <h1>Exporter des tables Notion</h1>
+          <p className="intro">Collez l’URL d’une page contenant les tables à exporter, ou l’identifiant d’une table. Ajoutez le token d’intégration uniquement si nécessaire.</p>
           <form className="page-form" onSubmit={openPage}>
             <label htmlFor="notion-page-url">URL de la page Notion</label>
             <input id="notion-page-url" type="text" value={pageUrl} onChange={(e) => setPageUrl(e.target.value)} placeholder="https://www.notion.so/... ou page_id" required />
@@ -157,7 +157,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
       <main className="single">
         <section className="surface">
           <div className="eyebrow">Notion Export</div>
-          <h1>{loading ? "Chargement…" : current ? current.name : "Leçon introuvable"}</h1>
+          <h1>{loading ? "Chargement…" : current ? current.name : "Table introuvable"}</h1>
           {notice}
           <div className="actions">
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportWord}>
@@ -196,7 +196,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           <div className="database-head">
             <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
             <span className="table-icon">▦</span>
-            <span>Pages et tables</span>
+            <span>Tables à exporter</span>
             <span className="count">{lessons.length}</span>
           </div>
           {loading && <div className="empty">Chargement des leçons…</div>}
@@ -209,7 +209,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
                 <span>{lesson.name}</span>
               </label>
             ))}
-          {!loading && lessons.length === 0 && <div className="empty">Ajoutez `?id=PAGE_ID` à l’URL pour charger une page Notion.</div>}
+          {!loading && lessons.length === 0 && <div className="empty">Aucune table trouvée. Utilisez l’identifiant d’une table ou d’une page contenant des tables.</div>}
         </div>
         <div className="actions">
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportWord}>
