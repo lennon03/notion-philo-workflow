@@ -2,9 +2,9 @@
 import { useEffect, useMemo, useState } from "react";
 
 export default function HomeClient({ token, pageId, initialLessonId }) {
-  const single = Boolean(initialLessonId || pageId);
+  const single = Boolean(initialLessonId);
   const [lessons, setLessons] = useState([]);
-  const [selected, setSelected] = useState(pageId || initialLessonId ? [pageId || initialLessonId] : []);
+  const [selected, setSelected] = useState(initialLessonId ? [initialLessonId] : []);
   const [size, setSize] = useState("large");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,15 +21,15 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
         const body = await r.json();
         if (!r.ok) throw new Error(body.error);
         setLessons(body.lessons);
-        if (pageId || initialLessonId) setSelected([pageId || initialLessonId]);
+        if (initialLessonId) setSelected([initialLessonId]);
       })
       .catch((error) => setStatus({ kind: "error", text: error.message }))
       .finally(() => setLoading(false));
   }, [query, initialLessonId]);
 
   const visible = useMemo(
-    () => (single ? lessons.filter((lesson) => lesson.id === (pageId || initialLessonId)) : lessons),
-    [lessons, single, pageId, initialLessonId]
+    () => (single ? lessons.filter((lesson) => lesson.id === initialLessonId) : lessons),
+    [lessons, single, initialLessonId]
   );
   const chosen = useMemo(() => lessons.filter((lesson) => selected.includes(lesson.id)), [lessons, selected]);
   const current = single ? visible[0] : null;
@@ -196,7 +196,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           <div className="database-head">
             <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
             <span className="table-icon">▦</span>
-            <span>Leçons</span>
+            <span>Pages et tables</span>
             <span className="count">{lessons.length}</span>
           </div>
           {loading && <div className="empty">Chargement des leçons…</div>}
