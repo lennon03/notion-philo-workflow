@@ -44,10 +44,10 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
       event.preventDefault();
       setFormError("");
       const input = pageUrl.trim();
-      if (!input) return setFormError("Collez une URL de page Notion.");
+      if (!input) return setFormError("Collez une URL Notion ou saisissez un identifiant de page.");
       try {
-        const parsed = new URL(input);
-        const match = parsed.pathname.match(/([0-9a-f]{32}|[0-9a-f-]{36})$/i);
+        const isId = /^(?:[0-9a-f]{32}|[0-9a-f-]{36})$/i.test(input);
+        const match = isId ? [input, input] : new URL(input).pathname.match(/([0-9a-f]{32}|[0-9a-f-]{36})$/i);
         if (!match) throw new Error();
         const id = match[1];
         const params = new URLSearchParams({ id, ...(pageToken.trim() ? { token: pageToken.trim() } : {}) });
@@ -65,7 +65,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           <p className="intro">Collez l’URL de la page à exporter. Ajoutez son token d’intégration uniquement si la page est privée.</p>
           <form className="page-form" onSubmit={openPage}>
             <label htmlFor="notion-page-url">URL de la page Notion</label>
-            <input id="notion-page-url" type="url" value={pageUrl} onChange={(e) => setPageUrl(e.target.value)} placeholder="https://www.notion.so/..." required />
+            <input id="notion-page-url" type="text" value={pageUrl} onChange={(e) => setPageUrl(e.target.value)} placeholder="https://www.notion.so/... ou page_id" required />
             <label htmlFor="notion-page-token">Token Notion (optionnel)</label>
             <input id="notion-page-token" type="password" value={pageToken} onChange={(e) => setPageToken(e.target.value)} placeholder="secret_..." autoComplete="off" />
             {formError && <div className="notice error">! <span>{formError}</span></div>}
