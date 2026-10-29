@@ -1,30 +1,30 @@
 # Notion Table Exporter
 
-Exportez le contenu de vos pages Notion en PDF, Word ou HTML.
+Export the content of your Notion pages to PDF, Word, or HTML.
 
-## 1. Structure compatible
+## 1. Compatible structure
 
-La page Notion doit contenir une base de données intégrée, avec une ligne par page à exporter.
+The Notion page must contain an inline database, with one row per page to export.
 
-![Structure Notion et aperçu du document exporté](docs/notion-export-overview.png)
+![Notion structure and exported document preview](docs/notion-export-overview.png)
 
-## 2. Document exporté
+## 2. Exported document
 
-Le contenu des pages est transformé en document propre et lisible. Sélectionnez les pages à exporter, puis choisissez le format souhaité.
+Page content is converted into a clean, readable document. Select the pages to export, then choose the desired format.
 
-![Utilisation de l’exporteur](docs/export-workflow.png)
+![How to use the exporter](docs/export-workflow.png)
 
-Les éléments Notion suivants sont pris en charge :
+The following Notion elements are supported:
 
-- MathJax et formules LaTeX
-- Blocs de code et code inline
-- Tableaux
+- MathJax and LaTeX formulas
+- Code blocks and inline code
+- Tables
 
-## Token Notion
+## Notion token
 
-1. Ouvrez [My integrations](https://www.notion.so/my-integrations).
-2. Cliquez sur **New integration**, choisissez votre espace de travail et créez l’intégration interne.
-3. Copiez l’**Internal Integration Secret**.
-4. Collez le token dans l’application, ou stockez-le dans `NOTION_API_TOKEN` dans un fichier `.env`.
+1. Open [My integrations](https://www.notion.so/my-integrations).
+2. Click **New integration**, choose your workspace, and create the internal integration.
+3. Copy the **Internal Integration Secret**.
+4. Paste the token into the application, or store it as `NOTION_API_TOKEN` in a `.env` file.
 
-Ne commitez jamais le token et ne le partagez pas publiquement.
+Never commit the token or share it publicly.
