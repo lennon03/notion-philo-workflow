@@ -6,6 +6,14 @@ This tool is useful for Notion pages where the content you want to export is sto
 
 ![Example exported document](docs/example-export.png)
 
+## Préparer la page Notion
+
+La page Notion doit contenir une ou plusieurs bases de données intégrées. Chaque ligne de la base doit être une page (par exemple une leçon), afin que l’exporteur puisse récupérer son titre et son contenu. Une vue en tableau avec une colonne **Name**/titre suffit ; les autres propriétés sont facultatives.
+
+Voici un exemple de structure compatible :
+
+![Exemple de structure Notion](docs/notion-example.png)
+
 ## What it supports
 
 - Export one or multiple Notion tables together
@@ -30,9 +38,13 @@ The exporter uses the page link directly. Make sure the page is shared with the 
 
 ## Connect your Notion account
 
-Create an internal integration at https://www.notion.so/my-integrations and share each target page with it. Enter the token in the settings panel, or use `NOTION_API_TOKEN` / a `.env` file.
+1. Open [My integrations](https://www.notion.so/my-integrations) in Notion.
+2. Click **New integration**, select your workspace, then create the internal integration.
+3. On the integration page, copy the **Internal Integration Secret** (the token, usually beginning with `secret_` or `ntn_`).
+4. In Notion, open the page to export, choose **Share**, and invite the integration so it can access the page and its databases.
+5. Paste the token into the exporter, or store it as `NOTION_API_TOKEN` in a local `.env` file.
 
-The link above is where you create the integration and get your token.
+Never commit the token or share it publicly. The token is only needed when the page is private; public pages may work without it.
 
 ## PDF limitations
 

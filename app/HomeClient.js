@@ -62,11 +62,12 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
       <main>
         <section className="surface landing">
           <h1>Exporter des tables Notion en PDF, Word et HTML</h1>
-          <p className="intro">Collez l’URL d’une page contenant les tables à exporter, ou l’identifiant d’une table. Ajoutez le token d’intégration uniquement si la page est privée. Créez votre intégration interne et récupérez votre token sur <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer">la page des intégrations Notion</a>.</p>
+          <p className="intro">Collez l’URL d’une page contenant une ou plusieurs bases de données intégrées, ou l’identifiant d’une table. Chaque ligne doit être une page Notion contenant le contenu à exporter.</p>
+          <p className="note">Token Notion : ouvrez <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer">My integrations</a>, cliquez sur <strong>New integration</strong>, choisissez votre espace de travail et copiez l’<strong>Internal Integration Secret</strong>. Puis, dans Notion, partagez la page avec cette intégration via <strong>Share</strong> &gt; <strong>Invite</strong>. Ne partagez jamais ce token publiquement.</p>
           <form className="page-form" onSubmit={openPage}>
             <label htmlFor="notion-page-url">URL de la page Notion</label>
             <input id="notion-page-url" type="text" value={pageUrl} onChange={(e) => setPageUrl(e.target.value)} placeholder="https://www.notion.so/... ou page_id" required />
-            <label htmlFor="notion-page-token">Token Notion — obtenez-le sur <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer">notion.so/my-integrations</a></label>
+            <label htmlFor="notion-page-token">Internal Integration Secret — à copier depuis <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer">My integrations</a></label>
             <input id="notion-page-token" type="password" value={pageToken} onChange={(e) => setPageToken(e.target.value)} placeholder="secret_..." autoComplete="off" />
             {formError && <div className="notice error">! <span>{formError}</span></div>}
             <button className="primary" type="submit">Ouvrir l’export</button>
