@@ -30,19 +30,21 @@ export default function HomeClient({ token, initialLessonId }) {
   const current = single ? visible[0] : null;
   const toggle = (id) => setSelected((items) => (items.includes(id) ? items.filter((item) => item !== id) : [...items, id]));
 
-  async function sync() {
-    const toSync = single ? visible : lessons;
-    if (!toSync.length) return setStatus({ kind: "error", text: "Aucune leçon à synchroniser." });
-    setStatus({ kind: "working", text: "Synchronisation des caches…" });
+  async function exportHtml() {
+    if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export HTML." });
+    setStatus({ kind: "working", text: "Préparation du document HTML…" });
     try {
-      const r = await fetch(`/api/sync${query}`, {
+      const r = await fetch(`/api/export${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessons: toSync }),
+        body: JSON.stringify({ lessons: chosen, format: "html", size }),
       });
-      const body = await r.json();
-      if (!r.ok) throw new Error(body.error);
-      setStatus({ kind: "success", text: body.results.map((x) => `${x.lesson} : ${x.cards} cartes`).join(" · ") });
+      if (!r.ok) throw new Error((await r.json()).error);
+      const url = URL.createObjectURL(await r.blob());
+      const a = Object.assign(document.createElement("a"), { href: url, download: `${chosen[0].name}.html` });
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus({ kind: "success", text: "Le document HTML est prêt." });
     } catch (e) {
       setStatus({ kind: "error", text: e.message });
     }
@@ -101,8 +103,7 @@ export default function HomeClient({ token, initialLessonId }) {
     </div>
   );
 
-  // Mode mono-leçon (vue embarquée /embed/<id>) : titre + statut au-dessus
-  // de deux boutons Exporter / Synchroniser, sans la liste des tables.
+  // Mode mono-leçon (vue embarquée /embed/<id>) : titre + exports, sans la liste.
   if (single) {
     return (
       <main className="single">
@@ -111,11 +112,11 @@ export default function HomeClient({ token, initialLessonId }) {
           <h1>{loading ? "Chargement…" : current ? current.name : "Leçon introuvable"}</h1>
           {notice}
           <div className="actions">
-            <button className="primary" disabled={!chosen.length || status?.kind === "working"} onClick={sync}>
-              ↻ Sync
-            </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportWord}>
               ↓ Export Word
+            </button>
+            <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
+              ↓ Export HTML
             </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportPdf}>
               ↓ Export PDF (expérimental)
@@ -142,7 +143,7 @@ export default function HomeClient({ token, initialLessonId }) {
       <section className="surface">
         <div className="eyebrow">Philosophie</div>
         <h1>Révisions</h1>
-        <p className="intro">Choisissez les leçons à traiter. Les caches sont des vues générées : une nouvelle synchronisation les remet à jour sans doublons.</p>
+        <p className="intro">Choisissez une ou plusieurs tables Notion à exporter. Les données sont lues directement depuis les tables sources.</p>
         <div className="database">
           <div className="database-head">
             <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
@@ -163,11 +164,11 @@ export default function HomeClient({ token, initialLessonId }) {
           {!loading && lessons.length === 0 && <div className="empty">Aucune table trouvée. Vérifiez le partage de la page et de ses bases avec l’intégration Notion.</div>}
         </div>
         <div className="actions">
-          <button className="primary" disabled={loading || status?.kind === "working" || lessons.length === 0} onClick={sync}>
-            ↻ Synchroniser le cache
-          </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportWord}>
             ↓ Exporter en Word
+          </button>
+          <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
+            ↓ Exporter en HTML
           </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportPdf}>
             ↓ Exporter en PDF (expérimental)
@@ -182,7 +183,7 @@ export default function HomeClient({ token, initialLessonId }) {
           </div>
         </div>
         {notice}
-        <p className="note">Le secret Notion reste uniquement sur le serveur Vercel. Un cache est entièrement remplacé à chaque synchronisation.</p>
+        <p className="note">Le secret Notion reste uniquement sur le serveur Vercel. Les exports utilisent directement les données des tables sélectionnées.</p>
       </section>
     </main>
   );

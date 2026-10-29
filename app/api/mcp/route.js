@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { FRONT_PROPERTY, allRows, createLessonTable, getNotion, lessons, pageBodyText, titleOf } from "../../../lib/notion";
-import { syncLesson } from "../../../lib/sync";
 
 // Endpoint MCP public (sans auth) : le secret Notion reste côté serveur.
 // lesson_id = l'id de la table (data-source id) d'une leçon.
 // Parle MCP Streamable HTTP (JSON-RPC) : initialize, tools/list, tools/call.
-// Outils : list_lessons, create_lesson, preview_lesson, sync_lesson, où lesson_id
+// Outils : list_lessons, create_lesson, preview_lesson, où lesson_id
 // est l'id de la table (data-source id).
-// Les routes /api/sync|lessons|export restent protégées par TOKEN_PWD.
+// Les routes /api/lessons|export restent protégées par TOKEN_PWD.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,12 +15,12 @@ const SERVER_INFO = { name: "philo-workflow", version: "0.3.0" };
 const SUPPORTED_PROTOCOLS = ["2025-06-18", "2025-11-25"];
 
 // Guidance serveur renvoyée dans initialize.instructions. Elle porte le long
-// formatage (consigne de production, aperçu HTML, layout des caches) ; les
+// formatage (consigne de production et aperçu HTML) ; les
 // outils restent autonomes grâce à leurs descriptions, donc rien d'indispensable
 // ne dépend de ce bloc.
 const SERVER_INSTRUCTIONS = `Workflow de flashcards de philosophie (Notion).
 
-PRÉREQUIS EXTERNE. Ce serveur ne donne pas accès à Notion : la lecture et l'écriture dans Notion passent par un skill Notion externe que l'agent doit avoir importé. Sans lui, seul le travail sur les caches reste possible (list_lessons, preview_lesson, sync_lesson). Ne simule jamais l'accès à Notion et n'invente ni page, ni table, ni identifiant. Si le skill Notion est absent, dis-le clairement et arrête-toi.
+PRÉREQUIS EXTERNE. Ce serveur ne donne pas accès à Notion : la lecture et l'écriture dans Notion passent par un skill Notion externe que l'agent doit avoir importé. Ne simule jamais l'accès à Notion et n'invente ni page, ni table, ni identifiant. Si le skill Notion est absent, dis-le clairement et arrête-toi.
 
 RÉFLEXE DE DÉMARRAGE. Quand l'utilisateur parle d'une leçon sans identifiant, appelle list_lessons pour traduire son nom en lesson_id. Avant toute écriture, lis la structure de la table et vérifie que le champ Front est disponible.
 
@@ -31,11 +30,11 @@ CONSIGNE DE PRODUCTION (philosophe). Si la demande ne comporte pas le mot OCR, a
 
 Si la demande comporte le mot OCR, ne change strictement rien à ce qui apparaît dans la photo que l'utilisateur envoie.
 
-OÙ VIVENT LES CACHES. Chaque table a son propre cache, tous regroupés sous une page unique nommée Card, elle-même enfant de la page parente. Le cache de la leçon « Le bonheur » est la page « Le bonheur Cards » à l'intérieur de « Card ». La page Card et ses pages filles sont générées par ce serveur : ne les crée pas et ne les modifie pas à la main. sync_lesson crée la page manquante si besoin et l'écrase intégralement à chaque appel. Une modification manuelle du cache est donc perdue à la synchronisation suivante ; la table source demeure l'autorité.
+SOURCE DES DONNÉES. Les tables Notion sont l'unique source de vérité. Les lectures relisent directement les lignes et le contenu des pages associées ; aucun cache n'est créé ou synchronisé.
 
 APERÇU HTML (si l'utilisateur demande un aperçu). Appelle preview_lesson, puis produis UNE page HTML autonome en artefact de chat, pas une page hébergée. Style spec, pas landing page : dense, lisible rapidement, sans hero, sans chrome décoratif, sans ton marketing, sans tirets cadratins. Fond noir pur (#000), texte blanc, gris sombre uniquement pour surfaces secondaires ou accents. Lisible sur mobile : viewport responsive, aucune mise en page à largeur fixe. HTML sémantique, CSS inline, SVG inline, images HTTPS ou data-URL uniquement. Script classique inline uniquement si l'interactivité aide vraiment ; la page doit rester utile sans JavaScript (le bac à sable bloque stockage, fetch, workers, frames, formulaires, popups). Sans script : liens externes en target="_blank" + rel="noopener noreferrer" ; avec script : pas de target="_blank". Jamais : scripts externes ou modules, gestionnaires d'événements inline, URLs javascript:, formulaires, frames, embeds, objets, applets, meta refresh, feuilles de style liées, secrets, URLs privées, chemins locaux. La page commence par un tableau question | réponse | changements. Les cartes sont en markdown Notion limité à : puces, flèches -> ou =>, italique, séparateurs. Aucune autre mise en forme.
 
-CRÉER UNE NOUVELLE LECON. Après confirmation de l'utilisateur, et seulement si list_lessons ne renvoie rien de similaire : 1) appelle create_lesson({name}), qui crée la table et renvoie lesson_id ; s'il signale qu'une leçon de ce nom existe, reprends le lesson_id de list_lessons sans en créer une seconde. 2) Demande à l'utilisateur de partager la nouvelle base avec l'intégration du workflow (celle de NOTION_TOKEN), sinon ce serveur ne la verra pas ; cette étape ne peut pas être automatisée, et une table absente de list_lessons en est le symptôme. 3) Ajoute les fiches avec le skill Notion. 4) Dans la page parente, ajoute un bloc Embed pointant sur l'URL de vue mono-leçon ci-dessous, en demandant le TOKEN_PWD à l'utilisateur et sans jamais inventer sa valeur. 5) Vérifie en ouvrant le lien : la vue mono-leçon (titre et statut au-dessus des deux boutons Sync / Export) doit s'afficher.
+CRÉER UNE NOUVELLE LECON. Après confirmation de l'utilisateur, et seulement si list_lessons ne renvoie rien de similaire : 1) appelle create_lesson({name}), qui crée la table et renvoie lesson_id ; s'il signale qu'une leçon de ce nom existe, reprends le lesson_id de list_lessons sans en créer une seconde. 2) Demande à l'utilisateur de partager la nouvelle base avec l'intégration du workflow (celle de NOTION_TOKEN), sinon ce serveur ne la verra pas ; cette étape ne peut pas être automatisée, et une table absente de list_lessons en est le symptôme. 3) Ajoute les fiches avec le skill Notion. 4) Dans la page parente, ajoute un bloc Embed pointant sur l'URL de vue mono-leçon ci-dessous, en demandant le TOKEN_PWD à l'utilisateur et sans jamais inventer sa valeur. 5) Vérifie en ouvrant le lien : la vue mono-leçon (titre et boutons d'export) doit s'afficher.
 
 INSTANCE. Workflow hébergé : https://notion-philo-workflow.vercel.app/api/mcp. Application web : https://notion-philo-workflow.vercel.app. Vue mono-leçon : https://notion-philo-workflow.vercel.app/embed/<lesson_id>?token=<TOKEN_PWD>. Ces URL sont celles de cette instance : utilise-les telles quelles, n'invente pas d'autre domaine et ne demande pas à l'utilisateur d'URL de déploiement.`;
 
@@ -65,7 +64,7 @@ const TOOLS = [
     outputSchema: {
       type: "object",
       properties: {
-        lesson_id: { type: "string", description: "Data-source id de la table créée, à réutiliser pour preview_lesson et sync_lesson." },
+        lesson_id: { type: "string", description: "Data-source id de la table créée, à réutiliser pour preview_lesson." },
         lesson: { type: "string" },
         databaseId: { type: "string" },
         url: { type: "string" },
@@ -77,7 +76,7 @@ const TOOLS = [
   {
     name: "preview_lesson",
     title: "Aperçu des cartes d'une leçon",
-    description: "Relit toutes les cartes d'une leçon (question + réponse) sans rien modifier. C'est l'outil de relecture : utilise-le quand l'utilisateur veut vérifier, relire ou voir ce qu'il faudrait corriger avant de synchroniser. Sa sortie sert aussi à construire l'aperçu HTML. Lecture seule.",
+    description: "Relit directement toutes les cartes d'une table (question + réponse) sans rien modifier. Sa sortie sert aussi à construire l'aperçu HTML. Lecture seule.",
     inputSchema: { type: "object", properties: { lesson_id: { type: "string", description: "Id de la table (data-source id) de la leçon." } }, required: ["lesson_id"], additionalProperties: false },
     outputSchema: {
       type: "object",
@@ -91,22 +90,6 @@ const TOOLS = [
       required: ["lesson", "cards"],
     },
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
-  },
-  {
-    name: "sync_lesson",
-    title: "Synchroniser le cache d'une leçon",
-    description: "Régénère le cache d'UNE leçon : sa page « <nom de la leçon> Cards », située sous la page conteneur « Card ». ECRASE intégralement le contenu précédent ; un seul appel par table. N'appelle cet outil qu'après une relecture par l'utilisateur (preview_lesson) et sur son ordre explicite (« synchronise », « mets à jour le cache »). N'écris jamais dans une page cache autrement, ni à la main ni via un outil Notion. Toutes les pages de cache sont générées par ce serveur : ne les crée pas et ne les modifie pas toi-même.",
-    inputSchema: { type: "object", properties: { lesson_id: { type: "string", description: "Id de la table (data-source id) de la leçon." } }, required: ["lesson_id"], additionalProperties: false },
-    outputSchema: {
-      type: "object",
-      properties: {
-        lesson: { type: "string" },
-        cards: { type: "number" },
-        cacheUrl: { type: "string", description: "URL de la page « <leçon> Cards » régénérée." },
-      },
-      required: ["lesson", "cards"],
-    },
-    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   },
 ];
 
@@ -157,14 +140,6 @@ async function callTool(name, args) {
     const structuredContent = { lesson: lesson.name, cards };
     const text = [`Leçon « ${lesson.name} » : ${cards.length} cartes.`, ...cards.map((c, i) => `${i + 1}. Q: ${c.question}`)].join("\n");
     return { structuredContent, content: [{ type: "text", text }] };
-  }
-  if (name === "sync_lesson") {
-    const { lesson_id } = lessonIdSchema.parse(args ?? {});
-    const items = await lessons();
-    const lesson = items.find((l) => l.id === lesson_id);
-    if (!lesson) throw new Error(`Leçon introuvable pour lesson_id ${lesson_id}. Appelle list_lessons.`);
-    const result = await syncLesson(notion, lesson);
-    return { structuredContent: result, content: [{ type: "text", text: `${result.lesson} : ${result.cards} cartes synchronisées.` }] };
   }
   throw new Error(`Outil inconnu : ${name}`);
 }
