@@ -8,7 +8,7 @@ Application Next.js qui lit directement les tables Notion et exporte une ou plus
 2. Partagez la page parente et chaque base de leçon avec l'intégration Notion.
 3. Exécutez `bun install`, puis `bun run dev`.
 
-Les tables de leçon sont découvertes dans `NOTION_PARENT_PAGE_ID`. Pour des tables placées ailleurs, configurez `NOTION_LESSONS_JSON`.
+La page racine est vide par défaut. Ajoutez `?id=<page_id>` pour charger une page Notion.
 
 ## Exports
 

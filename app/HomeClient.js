@@ -11,6 +11,11 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
   const query = new URLSearchParams({ ...(token ? { token } : {}), ...(pageId ? { id: pageId } : {}) }).toString();
 
   useEffect(() => {
+    if (!pageId && !initialLessonId) {
+      setLessons([]);
+      setLoading(false);
+      return;
+    }
     fetch(`/api/lessons?${query}`)
       .then(async (r) => {
         const body = await r.json();
@@ -161,7 +166,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
                 <span>{lesson.name}</span>
               </label>
             ))}
-          {!loading && lessons.length === 0 && <div className="empty">Aucune table trouvée. Vérifiez le partage de la page et de ses bases avec l’intégration Notion.</div>}
+          {!loading && lessons.length === 0 && <div className="empty">Ajoutez `?id=PAGE_ID` à l’URL pour charger une page Notion.</div>}
         </div>
         <div className="actions">
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportWord}>
