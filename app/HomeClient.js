@@ -30,12 +30,14 @@ export default function HomeClient({ token, initialLessonId }) {
   const toggle = (id) => setSelected((items) => (items.includes(id) ? items.filter((item) => item !== id) : [...items, id]));
 
   async function sync() {
+    const toSync = single ? visible : lessons;
+    if (!toSync.length) return setStatus({ kind: "error", text: "Aucune leçon à synchroniser." });
     setStatus({ kind: "working", text: "Synchronisation des caches…" });
     try {
       const r = await fetch(`/api/sync${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessons: chosen }),
+        body: JSON.stringify({ lessons: toSync }),
       });
       const body = await r.json();
       if (!r.ok) throw new Error(body.error);
@@ -46,13 +48,13 @@ export default function HomeClient({ token, initialLessonId }) {
   }
 
   async function exportWord() {
-    if (chosen.length !== 1) return setStatus({ kind: "error", text: "Choisissez exactement une leçon pour l’export Word." });
+    if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export Word." });
     setStatus({ kind: "working", text: "Préparation du document Word…" });
     try {
       const r = await fetch(`/api/export${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lesson: chosen[0], format: "docx" }),
+        body: JSON.stringify({ lessons: chosen, format: "docx" }),
       });
       if (!r.ok) throw new Error((await r.json()).error);
       const url = URL.createObjectURL(await r.blob());
@@ -66,13 +68,13 @@ export default function HomeClient({ token, initialLessonId }) {
   }
 
   async function exportPdf() {
-    if (chosen.length !== 1) return setStatus({ kind: "error", text: "Choisissez exactement une leçon pour l’export PDF." });
+    if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export PDF." });
     setStatus({ kind: "working", text: "Préparation du document PDF…" });
     try {
       const r = await fetch(`/api/export${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lesson: chosen[0], format: "pdf" }),
+        body: JSON.stringify({ lessons: chosen, format: "pdf" }),
       });
       if (!r.ok) throw new Error((await r.json()).error);
       const url = URL.createObjectURL(await r.blob());
@@ -127,6 +129,7 @@ export default function HomeClient({ token, initialLessonId }) {
         <p className="intro">Choisissez les leçons à traiter. Les caches sont des vues générées : une nouvelle synchronisation les remet à jour sans doublons.</p>
         <div className="database">
           <div className="database-head">
+            <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
             <span className="table-icon">▦</span>
             <span>Leçons</span>
             <span className="count">{lessons.length}</span>
@@ -139,24 +142,12 @@ export default function HomeClient({ token, initialLessonId }) {
                 <span className="checkbox" aria-hidden="true">{selected.includes(lesson.id) && "✓"}</span>
                 <span className="page-icon">◻</span>
                 <span>{lesson.name}</span>
-                <a
-                  className="embed-link"
-                  title="Ouvrir la vue embarquée de cette table"
-                  href={`/embed/${lesson.id}${query}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.open(`/embed/${lesson.id}${query}`, "_blank", "noopener");
-                  }}
-                >
-                  ⧉
-                </a>
               </label>
             ))}
           {!loading && lessons.length === 0 && <div className="empty">Aucune table trouvée. Vérifiez le partage de la page et de ses bases avec l’intégration Notion.</div>}
         </div>
         <div className="actions">
-          <button className="primary" disabled={!chosen.length || status?.kind === "working"} onClick={sync}>
+          <button className="primary" disabled={loading || status?.kind === "working" || lessons.length === 0} onClick={sync}>
             ↻ Synchroniser le cache
           </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportWord}>
