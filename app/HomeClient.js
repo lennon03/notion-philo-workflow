@@ -59,7 +59,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
     }
 
     return (
-      <main>
+      <main className="landing-layout">
         <section className="surface landing">
           <h1>Exporter des tables Notion en PDF, Word et HTML</h1>
           <figure className="notion-example">
@@ -70,12 +70,16 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           <form className="page-form" onSubmit={openPage}>
             <label htmlFor="notion-page-url">URL de la page Notion</label>
             <input id="notion-page-url" type="text" value={pageUrl} onChange={(e) => setPageUrl(e.target.value)} placeholder="https://www.notion.so/... ou page_id" required />
-            <label htmlFor="notion-page-token">Internal Integration Secret — à copier depuis <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer">My integrations</a></label>
+            <label htmlFor="notion-page-token">Internal Integration Secret (facultatif, seulement si la page est privée) — à copier depuis <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer">My integrations</a></label>
             <input id="notion-page-token" type="password" value={pageToken} onChange={(e) => setPageToken(e.target.value)} placeholder="secret_..." autoComplete="off" />
             {formError && <div className="notice error">! <span>{formError}</span></div>}
             <button className="primary" type="submit">Ouvrir l’export</button>
           </form>
         </section>
+        <aside className="export-preview">
+          <h2>Aperçu du document exporté</h2>
+          <img src="/export-preview.png" alt="Aperçu d’une page exportée" />
+        </aside>
       </main>
     );
   }
