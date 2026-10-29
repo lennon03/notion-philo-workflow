@@ -5,7 +5,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
   const single = Boolean(initialLessonId);
   const [lessons, setLessons] = useState([]);
   const [selected, setSelected] = useState(initialLessonId ? [initialLessonId] : []);
-  const [size, setSize] = useState("large");
+  const [size, setSize] = useState("medium");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const query = new URLSearchParams({ ...(token ? { token } : {}), ...(pageId ? { id: pageId } : {}) }).toString();
@@ -158,11 +158,11 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           <h1>{loading ? "Chargement…" : current ? current.name : "Table introuvable"}</h1>
           {notice}
           <div className="actions">
+            <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
+              ↓ HTML à imprimer en PDF
+            </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportWord}>
               ↓ Export Word
-            </button>
-            <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
-              ↓ Export HTML
             </button>
             <button disabled={chosen.length !== 1 || status?.kind === "working"} onClick={exportPdf}>
               ↓ Export PDF (expérimental)
@@ -208,11 +208,11 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           {!loading && lessons.length === 0 && <div className="empty">Aucune table trouvée. Utilisez l’identifiant d’une table ou d’une page contenant des tables.</div>}
         </div>
         <div className="actions">
+          <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
+            ↓ HTML à imprimer en PDF
+          </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportWord}>
             ↓ Exporter en Word
-          </button>
-          <button disabled={!chosen.length || status?.kind === "working"} onClick={exportHtml}>
-            ↓ Exporter en HTML
           </button>
           <button disabled={!chosen.length || status?.kind === "working"} onClick={exportPdf}>
             ↓ Exporter en PDF (expérimental)
