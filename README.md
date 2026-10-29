@@ -14,6 +14,12 @@ Le contenu des pages est transformé en document propre et lisible.
 
 ![Exemple de document exporté](docs/example-export.png)
 
+Les éléments Notion suivants sont pris en charge :
+
+- MathJax et formules LaTeX
+- Blocs de code et code inline
+- Tableaux
+
 ## Token Notion
 
 1. Ouvrez [My integrations](https://www.notion.so/my-integrations).
