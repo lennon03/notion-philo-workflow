@@ -9,3 +9,34 @@
 .actions button:first-child{background:#6d55d9;border-color:#6d55d9;color:#fff}
 .actions button:hover:not(:disabled){background:#f3efff;border-color:#b9aaf0;color:#493b8b}
 .actions button:first-child:hover:not(:disabled){background:#5b45c5;color:#fff}
+button:hover:not(:disabled){transform:none}
+button::before,button::after{content:none}
+
+/* Command-menu styling based on the provided UI reference. */
+:root{color:#18181b;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Inter Variable","Segoe UI",system-ui,sans-serif}
+main{background:#fff;padding:48px max(24px,calc((100vw - 896px)/2))}
+.surface{max-width:768px}
+h1{color:#18181b;font-size:36px;letter-spacing:-.04em}
+.intro{color:#71717a}
+.database{border:1px solid #e4e4e7;border-radius:12px;box-shadow:0 10px 24px rgb(24 24 27 / 8%),0 2px 6px rgb(24 24 27 / 5%)}
+.database-head{min-height:48px;height:auto;padding:0 16px;border-bottom-color:#e4e4e7;color:#18181b}
+.database-head input{width:16px;height:16px}
+.count{background:#f4f4f5;color:#71717a}
+.row{min-height:40px;margin:2px 8px;padding:8px 10px;border:0;border-radius:8px;color:#18181b;transition:background .15s ease}
+.row:last-child{margin-bottom:8px}
+.row:hover{background:#f4f4f5}
+.row.selected{background:#f4f4f5;box-shadow:none}
+.row input{width:16px;height:16px;accent-color:#18181b}
+.empty{padding:24px 16px;color:#71717a}
+.actions{align-items:center;gap:8px;margin:20px 0 16px}
+.actions button{min-height:32px;min-width:0;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:#71717a;box-shadow:none;font-size:12px;font-weight:500;letter-spacing:0}
+.actions button:first-child{background:#18181b;color:#fafafa}
+.actions button:hover:not(:disabled),.actions button:first-child:hover:not(:disabled){background:#f4f4f5;border:0;color:#18181b;box-shadow:none}
+.actions button:first-child:hover:not(:disabled){background:#27272a;color:#fafafa}
+.actions button:disabled{background:transparent}
+.size-control{gap:6px;color:#71717a;font-size:12px}
+.size-control select{padding:6px 8px;border-color:#e4e4e7;border-radius:8px;color:#18181b;font-size:12px}
+.notice{border-radius:8px;font-size:13px}
+button.primary{background:#18181b;border-color:#18181b}
+button.primary:hover:not(:disabled){background:#27272a}
+@media(max-width:560px){main{padding:24px 14px}h1{font-size:30px}.actions button{flex:1 1 calc(50% - 8px)}}

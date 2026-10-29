@@ -34,6 +34,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
   const chosen = useMemo(() => lessons.filter((lesson) => selected.includes(lesson.id)), [lessons, selected]);
   const current = single ? visible[0] : null;
   const toggle = (id) => setSelected((items) => (items.includes(id) ? items.filter((item) => item !== id) : [...items, id]));
+  const allSelected = lessons.length > 0 && lessons.every((lesson) => selected.includes(lesson.id));
 
   function Landing() {
     const [pageUrl, setPageUrl] = useState("");
@@ -190,7 +191,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
         <h1>Exporter des tables Notion en PDF, Word et HTML</h1>
         <div className="database">
           <div className="database-head">
-            <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
+            <input type="checkbox" checked={allSelected} onChange={() => setSelected(allSelected ? [] : lessons.map((lesson) => lesson.id))} aria-label="Sélectionner toutes les tables" />
             <span>Tables à exporter</span>
             <span className="count">{lessons.length}</span>
           </div>
@@ -198,7 +199,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           {!loading &&
             lessons.map((lesson) => (
               <label className={`row ${selected.includes(lesson.id) ? "selected" : ""}`} key={lesson.id}>
-                <input type="checkbox" checked={selected.includes(lesson.id)} onChange={() => toggle(lesson.id)} />
+                <input type="checkbox" checked={selected.includes(lesson.id)} onChange={() => toggle(lesson.id)} aria-label={`Sélectionner ${lesson.name}`} />
                 <span>{lesson.name}</span>
               </label>
             ))}

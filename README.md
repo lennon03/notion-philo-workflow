@@ -1,27 +1,63 @@
-# Export de tables Notion — V2
+# Notion Table Exporter
 
-Application Next.js qui lit directement les tables Notion et exporte une ou plusieurs tables sélectionnées en DOCX, HTML ou PDF via l'impression du navigateur.
+Export content from Notion pages that use tables into clean, readable documents.
 
-## Lancer localement
+This tool is useful for Notion pages where the content you want to export is stored inside one or more tables. Select the tables you need, choose an export format, and download the result.
 
-1. Copiez `.env.example` vers `.env.local` et renseignez `NOTION_TOKEN`.
-2. Partagez la page parente et chaque base de leçon avec l'intégration Notion.
-3. Exécutez `bun install`, puis `bun run dev`.
+![Example exported document](docs/example-export.png)
 
-La page racine est vide par défaut. Ajoutez `?id=<page_id>` pour charger une page Notion.
+## What it supports
 
-## Exports
+- Export one or multiple Notion tables together
+- HTML, Word (`.docx`), and PDF-ready exports
+- Code blocks and inline code
+- LaTeX formulas
+- Images
+- Lists, headings, paragraphs, dividers, and other common Notion content
 
-La sélection accepte plusieurs tables et les exporte dans un document unique. Les trois formats disponibles sont DOCX, HTML et PDF expérimental. Le PDF ouvre l'HTML dans le navigateur afin d'utiliser son moteur d'impression.
+## Getting started
 
-Les données sont toujours relues directement depuis les data sources Notion et le contenu de leurs pages. V2 ne crée, ne lit et ne synchronise aucun cache.
+### 1. Configure your Notion integration
 
-## Déploiement Vercel
+Copy the example environment file:
 
-Ajoutez `NOTION_TOKEN` et, si besoin, `NOTION_PARENT_PAGE_ID` ou `NOTION_LESSONS_JSON` dans les variables d'environnement de production.
+```bash
+cp .env.example .env.local
+```
 
-L'URL principale accepte `?id=<page_id>`. Pour une page privée, ajoutez le token réel de l'intégration Notion : `?id=<page_id>&token=<notion_token>`. Sans token d'URL, l'application utilise `NOTION_TOKEN`.
+Add your Notion integration token to `.env.local`:
 
-## Embed par page
+```env
+NOTION_TOKEN=secret_your_token_here
+```
 
-`/embed/<page_id>?token=<notion_token>` affiche une page Notion directement exportable.
+Make sure your Notion integration has access to the page and the tables you want to export.
+
+### 2. Install and start the app
+
+```bash
+bun install
+bun run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000), then paste a Notion page URL or page ID.
+
+## Exporting a page
+
+1. Paste the URL or ID of a Notion page containing your tables.
+2. Select the tables to include.
+3. Choose the text size when exporting HTML or PDF.
+4. Click the format you want:
+   - **HTML** — download an HTML document.
+   - **Word** — download a `.docx` document.
+   - **PDF** — open a print-ready document and choose **Save as PDF** in your browser.
+
+For private pages, you can provide the integration token in the app URL as `?token=<your_token>`.
+
+## Embed a single table
+
+To show one table directly in the export interface, use:
+
+```text
+/embed/<page_or_table_id>?token=<your_token>
+```
