@@ -62,10 +62,16 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
       <main className="landing-layout">
         <section className="surface landing">
           <h1>Exporter des tables Notion en PDF, Word et HTML</h1>
-          <figure className="notion-example">
-            <img src="/notion-example.png" alt="Exemple de base de données Notion compatible" />
-            <figcaption>Exemple de structure Notion à utiliser</figcaption>
-          </figure>
+          <div className="landing-examples">
+            <figure className="notion-example">
+              <img src="/notion-example.png" alt="Exemple de base de données Notion compatible" />
+              <figcaption>Exemple de structure Notion à utiliser</figcaption>
+            </figure>
+            <figure className="export-preview">
+              <img src="/export-preview.png" alt="Aperçu d’une page exportée" />
+              <figcaption>Aperçu du document exporté</figcaption>
+            </figure>
+          </div>
           <p className="note">Token Notion : ouvrez <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer">My integrations</a>, cliquez sur <strong>New integration</strong>, choisissez votre espace de travail et copiez l’<strong>Internal Integration Secret</strong>. Ne partagez jamais ce token publiquement.</p>
           <form className="page-form" onSubmit={openPage}>
             <label htmlFor="notion-page-url">URL de la page Notion</label>
@@ -76,10 +82,6 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
             <button className="primary" type="submit">Ouvrir l’export</button>
           </form>
         </section>
-        <aside className="export-preview">
-          <h2>Aperçu du document exporté</h2>
-          <img src="/export-preview.png" alt="Aperçu d’une page exportée" />
-        </aside>
       </main>
     );
   }
