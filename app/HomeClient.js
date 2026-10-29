@@ -1,30 +1,30 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 
-export default function HomeClient({ token, initialLessonId }) {
-  const single = Boolean(initialLessonId);
+export default function HomeClient({ token, pageId, initialLessonId }) {
+  const single = Boolean(initialLessonId || pageId);
   const [lessons, setLessons] = useState([]);
-  const [selected, setSelected] = useState(initialLessonId ? [initialLessonId] : []);
+  const [selected, setSelected] = useState(pageId || initialLessonId ? [pageId || initialLessonId] : []);
   const [size, setSize] = useState("large");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const query = `?token=${encodeURIComponent(token)}`;
+  const query = new URLSearchParams({ ...(token ? { token } : {}), ...(pageId ? { id: pageId } : {}) }).toString();
 
   useEffect(() => {
-    fetch(`/api/lessons${query}`)
+    fetch(`/api/lessons?${query}`)
       .then(async (r) => {
         const body = await r.json();
         if (!r.ok) throw new Error(body.error);
         setLessons(body.lessons);
-        if (initialLessonId) setSelected([initialLessonId]);
+        if (pageId || initialLessonId) setSelected([pageId || initialLessonId]);
       })
       .catch((error) => setStatus({ kind: "error", text: error.message }))
       .finally(() => setLoading(false));
   }, [query, initialLessonId]);
 
   const visible = useMemo(
-    () => (single ? lessons.filter((lesson) => lesson.id === initialLessonId) : lessons),
-    [lessons, single, initialLessonId]
+    () => (single ? lessons.filter((lesson) => lesson.id === (pageId || initialLessonId)) : lessons),
+    [lessons, single, pageId, initialLessonId]
   );
   const chosen = useMemo(() => lessons.filter((lesson) => selected.includes(lesson.id)), [lessons, selected]);
   const current = single ? visible[0] : null;
@@ -34,7 +34,7 @@ export default function HomeClient({ token, initialLessonId }) {
     if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export HTML." });
     setStatus({ kind: "working", text: "Préparation du document HTML…" });
     try {
-      const r = await fetch(`/api/export${query}`, {
+      const r = await fetch(`/api/export?${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lessons: chosen, format: "html", size }),
@@ -54,7 +54,7 @@ export default function HomeClient({ token, initialLessonId }) {
     if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export Word." });
     setStatus({ kind: "working", text: "Préparation du document Word…" });
     try {
-      const r = await fetch(`/api/export${query}`, {
+      const r = await fetch(`/api/export?${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lessons: chosen, format: "docx" }),
@@ -74,7 +74,7 @@ export default function HomeClient({ token, initialLessonId }) {
     if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export PDF." });
     setStatus({ kind: "working", text: "Ouverture de l’export HTML à imprimer…" });
     try {
-      const r = await fetch(`/api/export${query}`, {
+      const r = await fetch(`/api/export?${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lessons: chosen, format: "html", size }),
@@ -108,7 +108,7 @@ export default function HomeClient({ token, initialLessonId }) {
     return (
       <main className="single">
         <section className="surface">
-          <div className="eyebrow">Philosophie</div>
+          <div className="eyebrow">Notion Export</div>
           <h1>{loading ? "Chargement…" : current ? current.name : "Leçon introuvable"}</h1>
           {notice}
           <div className="actions">
@@ -141,8 +141,8 @@ export default function HomeClient({ token, initialLessonId }) {
   return (
     <main>
       <section className="surface">
-        <div className="eyebrow">Philosophie</div>
-        <h1>Révisions</h1>
+        <div className="eyebrow">Notion Export</div>
+        <h1>Exporter une page Notion</h1>
         <p className="intro">Choisissez une ou plusieurs tables Notion à exporter. Les données sont lues directement depuis les tables sources.</p>
         <div className="database">
           <div className="database-head">

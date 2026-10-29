@@ -1,4 +1,4 @@
-# Workflow Philo Notion — V2
+# Notion Export — V2
 
 Application Next.js qui lit directement les tables Notion et exporte une ou plusieurs tables sélectionnées en DOCX, HTML ou PDF via l'impression du navigateur.
 
@@ -18,12 +18,10 @@ Les données sont toujours relues directement depuis les data sources Notion et 
 
 ## Déploiement Vercel
 
-Ajoutez `NOTION_TOKEN`, `NOTION_PARENT_PAGE_ID`, `TOKEN_PWD` et, si besoin, `NOTION_LESSONS_JSON` dans les variables d'environnement de production. Embarquez ensuite `/embed?token=VOTRE_TOKEN_PWD` dans Notion.
+Ajoutez `NOTION_TOKEN` et, si besoin, `NOTION_PARENT_PAGE_ID` ou `NOTION_LESSONS_JSON` dans les variables d'environnement de production.
 
-## MCP public
+L'URL principale accepte `?id=<page_id>`. Pour une page privée, ajoutez le token réel de l'intégration Notion : `?id=<page_id>&token=<notion_token>`. Sans token d'URL, l'application utilise `NOTION_TOKEN`.
 
-`POST /api/mcp` parle MCP Streamable HTTP (JSON-RPC), sans `TOKEN_PWD`. Outils : `list_lessons`, `create_lesson` et `preview_lesson`. `preview_lesson` lit directement la table demandée.
+## Embed par page
 
-## Embed par table
-
-`/embed/<lesson_id>?token=xxx` affiche une vue mono-table adaptée aux embeds Notion, avec les boutons d'export.
+`/embed/<page_id>?token=<notion_token>` affiche une page Notion directement exportable.
