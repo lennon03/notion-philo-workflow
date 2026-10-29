@@ -1,4 +1,4 @@
-# Notion Export — V2
+# Export de tables Notion — V2
 
 Application Next.js qui lit directement les tables Notion et exporte une ou plusieurs tables sélectionnées en DOCX, HTML ou PDF via l'impression du navigateur.
 

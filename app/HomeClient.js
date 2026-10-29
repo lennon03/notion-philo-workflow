@@ -60,13 +60,12 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
     return (
       <main>
         <section className="surface landing">
-          <div className="eyebrow">Notion Export</div>
           <h1>Exporter des tables Notion</h1>
-          <p className="intro">Collez l’URL d’une page contenant les tables à exporter, ou l’identifiant d’une table. Ajoutez le token d’intégration uniquement si nécessaire.</p>
+          <p className="intro">Collez l’URL d’une page contenant les tables à exporter, ou l’identifiant d’une table. Ajoutez le token d’intégration uniquement si la page est privée.</p>
           <form className="page-form" onSubmit={openPage}>
             <label htmlFor="notion-page-url">URL de la page Notion</label>
             <input id="notion-page-url" type="text" value={pageUrl} onChange={(e) => setPageUrl(e.target.value)} placeholder="https://www.notion.so/... ou page_id" required />
-            <label htmlFor="notion-page-token">Token Notion (optionnel)</label>
+            <label htmlFor="notion-page-token">Token Notion (uniquement si la page est privée)</label>
             <input id="notion-page-token" type="password" value={pageToken} onChange={(e) => setPageToken(e.target.value)} placeholder="secret_..." autoComplete="off" />
             {formError && <div className="notice error">! <span>{formError}</span></div>}
             <button className="primary" type="submit">Ouvrir l’export</button>
@@ -156,7 +155,6 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
     return (
       <main className="single">
         <section className="surface">
-          <div className="eyebrow">Notion Export</div>
           <h1>{loading ? "Chargement…" : current ? current.name : "Table introuvable"}</h1>
           {notice}
           <div className="actions">
@@ -189,9 +187,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
   return (
     <main>
       <section className="surface">
-        <div className="eyebrow">Notion Export</div>
-        <h1>Exporter une page Notion</h1>
-        <p className="intro">Choisissez une ou plusieurs tables Notion à exporter. Les données sont lues directement depuis les tables sources.</p>
+        <h1>Exporter des tables Notion</h1>
         <div className="database">
           <div className="database-head">
             <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
@@ -231,7 +227,6 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
           </div>
         </div>
         {notice}
-        <p className="note">Le secret Notion reste uniquement sur le serveur Vercel. Les exports utilisent directement les données des tables sélectionnées.</p>
       </section>
     </main>
   );

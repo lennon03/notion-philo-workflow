@@ -10,7 +10,6 @@ export default async function EmbedLesson({ params, searchParams }) {
     return (
       <main>
         <section className="surface">
-          <div className="eyebrow">Notion Export</div>
           <h1>Leçon introuvable</h1>
           <div className="notice error">! <span>Identifiant de table manquant dans l’URL.</span></div>
         </section>
