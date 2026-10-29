@@ -69,19 +69,36 @@ export default function HomeClient({ token, initialLessonId }) {
 
   async function exportPdf() {
     if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export PDF." });
-    setStatus({ kind: "working", text: "Préparation du document PDF…" });
+    setStatus({ kind: "working", text: "Ouverture de l’aperçu à imprimer…" });
     try {
+      // On récupère la page HTML stylée, puis on l'ouvre dans un nouvel onglet
+      // et on lance l'impression : « Enregistrer au format PDF » donne un
+      // document net (polices et styles du navigateur, accents et emoji inclus).
       const r = await fetch(`/api/export${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessons: chosen, format: "pdf" }),
+        body: JSON.stringify({ lessons: chosen, format: "html" }),
       });
       if (!r.ok) throw new Error((await r.json()).error);
-      const url = URL.createObjectURL(await r.blob());
-      const a = Object.assign(document.createElement("a"), { href: url, download: `${chosen[0].name}.pdf` });
-      a.click();
-      URL.revokeObjectURL(url);
-      setStatus({ kind: "success", text: "Le document PDF est prêt." });
+      const html = await r.text();
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) throw new Error("Le navigateur a bloqué la fenêtre d’impression. Autorisez les pop-ups puis réessayez.");
+      // Le handler est posé AVANT l'écriture : load peut sinon se déclencher
+      // entre close() et l'affectation. Un filet de sécurité relance aussi
+      // l'impression si load ne se déclenche pas (fenêtre déjà prête).
+      let printed = false;
+      const launchPrint = () => {
+        if (printed) return;
+        printed = true;
+        setTimeout(() => printWindow.print(), 250);
+      };
+      printWindow.onload = launchPrint;
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(launchPrint, 1200);
+      setStatus({ kind: "success", text: "Aperçu prêt : choisissez « Enregistrer au format PDF »." });
     } catch (e) {
       setStatus({ kind: "error", text: e.message });
     }
