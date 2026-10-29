@@ -28,6 +28,12 @@ This tool is useful for Notion pages where the content you want to export is sto
 
 The exporter uses the page link directly. Make sure the page is shared with the exporter before opening it.
 
+## Connect your Notion account
+
+Create an internal integration at https://www.notion.so/my-integrations and share each target page with it. Enter the token in the settings panel, or use `NOTION_API_TOKEN` / a `.env` file.
+
+The link above is where you create the integration and get your token.
+
 ## PDF limitations
 
 PDF export is experimental. Font ligatures may not render perfectly, and there may be other minor formatting quirks because the PDF is generated through the browser's print workflow.

@@ -33,7 +33,7 @@ h1{color:#18181b;font-size:36px;letter-spacing:-.04em}
 .actions button:first-child{background:#18181b;color:#fafafa}
 .actions button:hover:not(:disabled),.actions button:first-child:hover:not(:disabled){background:#f4f4f5;border:0;color:#18181b;box-shadow:none}
 .actions button:first-child:hover:not(:disabled){background:#27272a;color:#fafafa}
-.actions button:disabled{background:transparent}
+.actions button:disabled,.actions button:first-child:disabled{background:#f4f4f5;color:#a1a1aa;border-color:#e4e4e7}
 .size-control{gap:6px;color:#71717a;font-size:12px}
 .size-control select{padding:6px 8px;border-color:#e4e4e7;border-radius:8px;color:#18181b;font-size:12px}
 .notice{border-radius:8px;font-size:13px}
