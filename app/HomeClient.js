@@ -35,6 +35,49 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
   const current = single ? visible[0] : null;
   const toggle = (id) => setSelected((items) => (items.includes(id) ? items.filter((item) => item !== id) : [...items, id]));
 
+  function Landing() {
+    const [pageUrl, setPageUrl] = useState("");
+    const [pageToken, setPageToken] = useState("");
+    const [formError, setFormError] = useState("");
+
+    function openPage(event) {
+      event.preventDefault();
+      setFormError("");
+      const input = pageUrl.trim();
+      if (!input) return setFormError("Collez une URL de page Notion.");
+      try {
+        const parsed = new URL(input);
+        const match = parsed.pathname.match(/([0-9a-f]{32}|[0-9a-f-]{36})$/i);
+        if (!match) throw new Error();
+        const id = match[1];
+        const params = new URLSearchParams({ id, ...(pageToken.trim() ? { token: pageToken.trim() } : {}) });
+        window.location.assign(`/?${params}`);
+      } catch {
+        setFormError("Cette URL Notion ne contient pas d’identifiant de page valide.");
+      }
+    }
+
+    return (
+      <main>
+        <section className="surface landing">
+          <div className="eyebrow">Notion Export</div>
+          <h1>Exporter une page Notion</h1>
+          <p className="intro">Collez l’URL de la page à exporter. Ajoutez son token d’intégration uniquement si la page est privée.</p>
+          <form className="page-form" onSubmit={openPage}>
+            <label htmlFor="notion-page-url">URL de la page Notion</label>
+            <input id="notion-page-url" type="url" value={pageUrl} onChange={(e) => setPageUrl(e.target.value)} placeholder="https://www.notion.so/..." required />
+            <label htmlFor="notion-page-token">Token Notion (optionnel)</label>
+            <input id="notion-page-token" type="password" value={pageToken} onChange={(e) => setPageToken(e.target.value)} placeholder="secret_..." autoComplete="off" />
+            {formError && <div className="notice error">! <span>{formError}</span></div>}
+            <button className="primary" type="submit">Ouvrir l’export</button>
+          </form>
+        </section>
+      </main>
+    );
+  }
+
+  if (!pageId && !initialLessonId) return <Landing />;
+
   async function exportHtml() {
     if (chosen.length === 0) return setStatus({ kind: "error", text: "Choisissez au moins une leçon pour l’export HTML." });
     setStatus({ kind: "working", text: "Préparation du document HTML…" });
