@@ -60,7 +60,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
     return (
       <main>
         <section className="surface landing">
-          <h1>Exporter des tables Notion</h1>
+          <h1>Exporter des tables Notion en PDF, Word et HTML</h1>
           <p className="intro">Collez l’URL d’une page contenant les tables à exporter, ou l’identifiant d’une table. Ajoutez le token d’intégration uniquement si la page est privée.</p>
           <form className="page-form" onSubmit={openPage}>
             <label htmlFor="notion-page-url">URL de la page Notion</label>
@@ -187,7 +187,7 @@ export default function HomeClient({ token, pageId, initialLessonId }) {
   return (
     <main>
       <section className="surface">
-        <h1>Exporter des tables Notion</h1>
+        <h1>Exporter des tables Notion en PDF, Word et HTML</h1>
         <div className="database">
           <div className="database-head">
             <input type="checkbox" checked={lessons.length > 0 && selected.length === lessons.length} onChange={() => setSelected(selected.length === lessons.length ? [] : lessons.map((lesson) => lesson.id))} />
