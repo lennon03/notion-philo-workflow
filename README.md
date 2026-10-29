@@ -15,49 +15,27 @@ This tool is useful for Notion pages where the content you want to export is sto
 - Images
 - Lists, headings, paragraphs, dividers, and other common Notion content
 
-## Getting started
-
-### 1. Configure your Notion integration
-
-Copy the example environment file:
-
-```bash
-cp .env.example .env.local
-```
-
-Add your Notion integration token to `.env.local`:
-
-```env
-NOTION_TOKEN=secret_your_token_here
-```
-
-Make sure your Notion integration has access to the page and the tables you want to export.
-
-### 2. Install and start the app
-
-```bash
-bun install
-bun run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000), then paste a Notion page URL or page ID.
-
 ## Exporting a page
 
-1. Paste the URL or ID of a Notion page containing your tables.
-2. Select the tables to include.
-3. Choose the text size when exporting HTML or PDF.
-4. Click the format you want:
+1. Open the exporter.
+2. Paste the link to a Notion page containing your tables.
+3. Select the tables to include.
+4. Choose the text size when exporting HTML or PDF.
+5. Click the format you want:
    - **HTML** — download an HTML document.
    - **Word** — download a `.docx` document.
    - **PDF** — open a print-ready document and choose **Save as PDF** in your browser.
 
-For private pages, you can provide the integration token in the app URL as `?token=<your_token>`.
+The exporter uses the page link directly. Make sure the page is shared with the exporter before opening it.
+
+## PDF limitations
+
+PDF export is experimental. Font ligatures may not render perfectly, and there may be other minor formatting quirks because the PDF is generated through the browser's print workflow.
 
 ## Embed a single table
 
 To show one table directly in the export interface, use:
 
 ```text
-/embed/<page_or_table_id>?token=<your_token>
+/embed/<page_or_table_id>
 ```
