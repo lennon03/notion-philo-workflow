@@ -5,7 +5,7 @@ export default function HomeClient({ token, initialLessonId }) {
   const single = Boolean(initialLessonId);
   const [lessons, setLessons] = useState([]);
   const [selected, setSelected] = useState(initialLessonId ? [initialLessonId] : []);
-  const [size, setSize] = useState(3);
+  const [size, setSize] = useState("large");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const query = `?token=${encodeURIComponent(token)}`;
@@ -140,8 +140,11 @@ export default function HomeClient({ token, initialLessonId }) {
             </button>
             <div className="size-control single">
               <label htmlFor="pdf-size-single">Taille</label>
-              <input id="pdf-size-single" type="range" min="1" max="5" step="1" value={size} onChange={(e) => setSize(Number(e.target.value))} disabled={status?.kind === "working"} />
-              <span className="size-value">{size}</span>
+              <select id="pdf-size-single" value={size} onChange={(e) => setSize(e.target.value)} disabled={status?.kind === "working"}>
+                <option value="small">Petit</option>
+                <option value="medium">Moyen</option>
+                <option value="large">Grand</option>
+              </select>
             </div>
           </div>
           {!loading && !current && (
@@ -189,8 +192,11 @@ export default function HomeClient({ token, initialLessonId }) {
           </button>
           <div className="size-control">
             <label htmlFor="pdf-size">Taille du texte</label>
-            <input id="pdf-size" type="range" min="1" max="5" step="1" value={size} onChange={(e) => setSize(Number(e.target.value))} disabled={status?.kind === "working"} />
-            <span className="size-value">{size}</span>
+            <select id="pdf-size" value={size} onChange={(e) => setSize(e.target.value)} disabled={status?.kind === "working"}>
+              <option value="small">Petit</option>
+              <option value="medium">Moyen</option>
+              <option value="large">Grand</option>
+            </select>
           </div>
         </div>
         {notice}
