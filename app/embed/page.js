@@ -10,12 +10,12 @@ export default async function Embed({ searchParams }) {
     <main className="embed">
       <div className="embed-card">
         <div className="embed-text">
-          <div className="embed-title">Exporter en document</div>
-          <p className="embed-desc">
-            {id
-              ? "PDF, Word ou HTML. L’export s’ouvre dans un nouvel onglet, Notion bloquant les téléchargements intégrés."
-              : "Aucune page indiquée dans le lien d’intégration. Ajoutez ?id=… à l’URL, ou ouvrez l’outil pour en choisir une."}
-          </p>
+          <div className="embed-title">Exporter la page Notion en PDF</div>
+          {!id && (
+            <p className="embed-desc">
+              Aucune page indiquée dans le lien d’intégration. Ajoutez ?id=… à l’URL, ou ouvrez l’outil pour en choisir une.
+            </p>
+          )}
         </div>
         <a className="send" href={href} target="_blank" rel="noopener noreferrer">
           <span>Ouvrir l’export</span>
