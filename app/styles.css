@@ -247,7 +247,8 @@ body:has(.embed) { background: transparent; }
 .embed-text { flex: 1 1 260px; min-width: 0; }
 .embed-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
 .embed-desc { margin: 2px 0 0; color: var(--muted-foreground); font-size: 13px; }
-.embed-card .send:hover { text-decoration: none; }
+.embed-card .send { background: #2783de; }
+.embed-card .send:hover:not(:disabled) { background: #2783de; text-decoration: none; filter: brightness(.94); }
 
 @media (max-width: 640px) {
   .topbar { padding: 0 12px 0 16px; }
