@@ -11,6 +11,12 @@ const nextConfig = {
       "./node_modules/@fontsource/fira-code/files/fira-code-latin-400-normal.woff2",
       "./lib/katex-inline.txt",
     ],
+    // L'aperçu HTML en direct charge les mêmes assets inline (polices, CSS KaTeX).
+    "/view": [
+      "./node_modules/katex/dist/fonts/**",
+      "./node_modules/@fontsource/fira-code/files/fira-code-latin-400-normal.woff2",
+      "./lib/katex-inline.txt",
+    ],
   },
 };
 module.exports = nextConfig;

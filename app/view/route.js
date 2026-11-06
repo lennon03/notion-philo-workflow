@@ -1,4 +1,4 @@
-import { exportLessonHtml } from "../../lib/export-html";
+import { streamLessonHtml } from "../../lib/export-html";
 import { getNotion } from "../../lib/notion";
 import { getRequestToken } from "../../lib/auth";
 
@@ -13,13 +13,24 @@ export async function GET(request) {
   const names = params.getAll("n");
   const lessons = ids.map((id, i) => ({ id, name: names[i] || "Table Notion", type: "table" }));
   if (!lessons.length) return page("Aucune table indiquée dans le lien.", 400);
+  let notion;
   try {
-    const html = await exportLessonHtml(lessons, { size: params.get("size") || "medium", notion: getNotion(getRequestToken(request)) });
-    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store" } });
+    notion = getNotion(getRequestToken(request));
   } catch (error) {
-    console.error(error);
-    return page(error.body || error.message || "L’export a échoué.", 500);
+    return page(error.message, 500);
   }
+  const stream = streamLessonHtml(lessons, { size: params.get("size") || "medium", notion });
+  const encoder = new TextEncoder();
+  // La page s'affiche tout de suite et se complète au fil du chargement de Notion.
+  const body = new ReadableStream({
+    async pull(controller) {
+      const { value, done } = await stream.next();
+      if (done) controller.close();
+      else controller.enqueue(encoder.encode(value));
+    },
+    cancel() { stream.return(); },
+  });
+  return new Response(body, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", "X-Accel-Buffering": "no" } });
 }
 
 function page(message, status) {
